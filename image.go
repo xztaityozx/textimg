@@ -70,7 +70,10 @@ func writeImage(w io.Writer, encFmt encodeFormat, texts []string, appconf applic
 	drawBackgroundAll(img, appconf.background)
 
 	posY := charHeight
+	// テキストの高さズレを調整するための値
+	posFgMng := charHeight/5 - 2
 	for i, line := range texts {
+		// テキストの横の位置ずれを調整
 		posX := 0
 		fgCol := appconf.foreground
 		bgCol := appconf.background
@@ -84,7 +87,6 @@ func writeImage(w io.Writer, encFmt encodeFormat, texts []string, appconf applic
 			case kindText:
 				text := prefix
 				drawBackground(img, posX, posY-charHeight, text, bgCol, charWidth, charHeight)
-				// drawLabel(img, posX, posY-(charHeight/5), text, fgCol, face)
 				for _, r := range []rune(text) {
 					path := fmt.Sprintf("%s/emoji_u%.4x.png", emojiDir, r)
 					_, err := os.Stat(path)
@@ -96,16 +98,16 @@ func writeImage(w io.Writer, encFmt encodeFormat, texts []string, appconf applic
 						// る画像ファイルが存在するため絵文字として描画
 						if appconf.useEmojiFont {
 							// EmojiFontを使うときはTTFから絵文字を描画する
-							drawLabel(img, posX, posY-(charHeight/5), r, fgCol, emojiFace)
+							drawLabel(img, posX, posY-posFgMng, r, fgCol, emojiFace)
 						} else {
 							// EmojiFontを使わないときは画像ファイルから絵文字を
 							// 描画する
-							drawEmoji(img, posX, posY-(charHeight/5), r, path, fgCol, face)
+							drawEmoji(img, posX, posY-posFgMng, r, path, fgCol, face)
 						}
 					} else {
 						// 絵文字コードポイントにマッチする画像が存在しないときは
 						// 普通のテキストとして描画する
-						drawLabel(img, posX, posY-(charHeight/5), r, fgCol, face)
+						drawLabel(img, posX, posY-posFgMng, r, fgCol, face)
 					}
 					rw := runewidth.RuneWidth(r)
 					// RuneWidthではハーフブロック文字が全角文字幅として判定され
