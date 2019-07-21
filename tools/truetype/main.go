@@ -16,6 +16,7 @@ import (
 
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
+	"github.com/mattn/go-runewidth"
 	"golang.org/x/image/font"
 )
 
@@ -26,7 +27,7 @@ var (
 	size     = flag.Float64("size", 125, "font size in points")
 	spacing  = flag.Float64("spacing", 1.5, "line spacing (e.g. 2 means double spaced)")
 	wonb     = flag.Bool("whiteonblack", false, "white text on a black background")
-	text     = string("JOJO")
+	text     = string("JOJOあいあい")
 )
 
 func main() {
@@ -43,9 +44,16 @@ func main() {
 		return
 	}
 
+	width := runewidth.StringWidth(text) * int(*size)
+	height := 1 * int(*size)
+
+	fmt.Printf("width = %d\n", width)
+	fmt.Printf("height = %d\n", height)
+	fmt.Println("-------------")
+
 	// Freetype context
 	fg, bg := image.Black, image.White
-	rgba := image.NewRGBA(image.Rect(0, 0, 1000, 200))
+	rgba := image.NewRGBA(image.Rect(0, 0, width, height))
 	draw.Draw(rgba, rgba.Bounds(), bg, image.ZP, draw.Src)
 	c := freetype.NewContext()
 	c.SetDPI(*dpi)
@@ -73,20 +81,24 @@ func main() {
 
 	// Truetype stuff
 	opts := truetype.Options{}
-	opts.Size = 125.0
+	opts.Size = *size
 	face := truetype.NewFace(f, &opts)
 
 	// Calculate the widths and print to image
-	for i, x := range text {
+	for i, x := range []rune(text) {
 		awidth, ok := face.GlyphAdvance(rune(x))
 		if ok != true {
 			log.Println(err)
 			return
 		}
-		iwidthf := int(float64(awidth) / 64)
+		iwidthf := int(float64(awidth) / (*size / 2))
+		// if runewidth.RuneWidth(x) == 1 {
+		// 	iwidthf /= 2
+		// }
+
 		fmt.Printf("iwidthf = %+v\n", iwidthf)
 
-		pt := freetype.Pt(i*250+(125-iwidthf/2), 128)
+		pt := freetype.Pt(i*iwidthf, int(*size))
 		c.DrawString(string(x), pt)
 		fmt.Printf("awidth = %+v\n", awidth)
 	}
