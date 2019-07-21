@@ -16,7 +16,6 @@ import (
 
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
-	"github.com/mattn/go-runewidth"
 	"golang.org/x/image/font"
 )
 
@@ -27,7 +26,8 @@ var (
 	size     = flag.Float64("size", 125, "font size in points")
 	spacing  = flag.Float64("spacing", 1.5, "line spacing (e.g. 2 means double spaced)")
 	wonb     = flag.Bool("whiteonblack", false, "white text on a black background")
-	text     = string("JOJOあいあい")
+	// text     = string("JOJOあいあい▄▀")
+	text = string("▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀▄▀")
 )
 
 func main() {
@@ -44,7 +44,8 @@ func main() {
 		return
 	}
 
-	width := runewidth.StringWidth(text) * int(*size)
+	width := len([]rune(text)) * int(*size) / 2
+	// width := runewidth.StringWidth(text) * int(*size)
 	height := 1 * int(*size)
 
 	fmt.Printf("width = %d\n", width)
@@ -86,7 +87,15 @@ func main() {
 
 	// Calculate the widths and print to image
 	for i, x := range []rune(text) {
-		awidth, ok := face.GlyphAdvance(rune(x))
+		bounds, advance, ok := face.GlyphBounds(x)
+		if !ok {
+			return
+		}
+		fmt.Printf("Bounds: %v\n", bounds)
+		fmt.Printf("Advance: %v\n", advance)
+		fmt.Printf("Metrics height: %v\n", face.Metrics().Height)
+		fmt.Printf("Metrics xheight: %v\n", face.Metrics().XHeight)
+		awidth, ok := face.GlyphAdvance(x)
 		if ok != true {
 			log.Println(err)
 			return
