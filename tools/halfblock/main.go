@@ -42,6 +42,7 @@ func main() {
 	drawLabel(img, 123, 49, []rune("▀")[0], blue, face)
 	drawLabel(img, 146, 50, []rune("▄")[0], yellow, face)
 	drawLabel(img, 169, 49, []rune("▀")[0], blue, face)
+	drawLabel(img, 0, 0, []rune("あ")[0], white, face)
 	// drawLabel(img, 146, 50, []rune("▀")[0], green, face)
 
 	w, err := os.Create("out.png")

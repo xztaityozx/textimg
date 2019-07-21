@@ -12,10 +12,12 @@ import (
 	"image/png"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"github.com/mattn/go-runewidth"
 	xdraw "golang.org/x/image/draw"
@@ -55,12 +57,27 @@ func writeImage(w io.Writer, encFmt encodeFormat, texts []string, appconf applic
 	}
 
 	var (
-		img       = image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
-		face      = readFace(appconf.fontfile, float64(appconf.fontsize))
+		img = image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
+		// face      = readFace(appconf.fontfile, float64(appconf.fontsize))
 		emojiFace font.Face
 		imgs      []*image.RGBA
 		delays    []int
 	)
+
+	b, _ := ioutil.ReadFile(appconf.fontfile) // FIXME
+	f, _ := truetype.Parse(b)                 // FIXME
+	rgba := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
+	c := freetype.NewContext()
+	c.SetDPI(72)
+	c.SetFont(f)
+	c.SetFontSize(float64(appconf.fontsize))
+	c.SetClip(rgba.Bounds())
+	c.SetDst(rgba)
+	c.SetSrc(image.White) // FIXME 暫定
+	c.SetHinting(font.HintingNone)
+	opts := truetype.Options{}
+	opts.Size = float64(appconf.fontsize)
+	face := truetype.NewFace(f, &opts)
 
 	// 絵文字フォントの指定があれば使う
 	if appconf.emojiFontfile != "" {
@@ -87,7 +104,7 @@ func writeImage(w io.Writer, encFmt encodeFormat, texts []string, appconf applic
 			case kindText:
 				text := prefix
 				drawBackground(img, posX, posY-charHeight, text, bgCol, charWidth, charHeight)
-				for _, r := range []rune(text) {
+				for hogefuga, r := range []rune(text) {
 					path := fmt.Sprintf("%s/emoji_u%.4x.png", emojiDir, r)
 					_, err := os.Stat(path)
 					// 48~57は数字の0~9
@@ -119,6 +136,15 @@ func writeImage(w io.Writer, encFmt encodeFormat, texts []string, appconf applic
 						}
 					}
 					posX += rw * charWidth
+
+					awidth, ok := face.GlyphAdvance(rune(r))
+					if ok != true {
+						log.Println(err)
+						return
+					}
+					iwidthf := int(float64(awidth) / float64(appconf.fontsize/2))
+					pt := freetype.Pt(hogefuga*appconf.fontsize*2+(appconf.fontsize-iwidthf/2), (i+1)*charHeight/2)
+					c.DrawString(string(r), pt)
 				}
 			case kindEscapeSequenceColor:
 				colors := parseColorEscapeSequence(prefix)
@@ -159,6 +185,10 @@ func writeImage(w io.Writer, encFmt encodeFormat, texts []string, appconf applic
 			}
 		}
 	}
+
+	tmpW, _ := os.Create("out.png")
+	defer tmpW.Close()
+	png.Encode(tmpW, rgba)
 
 	var err error
 	switch encFmt {
@@ -222,7 +252,7 @@ func readFace(fontPath string, fontSize float64) font.Face {
 		fontData = gomono.TTF
 	}
 
-	ft, err := truetype.Parse(fontData)
+	font, err := truetype.Parse(fontData)
 	if err != nil {
 		panic(err)
 	}
@@ -234,7 +264,7 @@ func readFace(fontPath string, fontSize float64) font.Face {
 		SubPixelsX:        0,
 		SubPixelsY:        0,
 	}
-	face := truetype.NewFace(ft, &opt)
+	face := truetype.NewFace(font, &opt)
 	return face
 }
 

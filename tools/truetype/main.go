@@ -84,11 +84,11 @@ func main() {
 			return
 		}
 		iwidthf := int(float64(awidth) / 64)
-		fmt.Printf("%+v\n", iwidthf)
+		fmt.Printf("iwidthf = %+v\n", iwidthf)
 
 		pt := freetype.Pt(i*250+(125-iwidthf/2), 128)
 		c.DrawString(string(x), pt)
-		fmt.Printf("%+v\n", awidth)
+		fmt.Printf("awidth = %+v\n", awidth)
 	}
 
 	// Save that RGBA image to disk.
