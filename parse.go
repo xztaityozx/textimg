@@ -213,11 +213,28 @@ func getText(s string) (ret string) {
 	return
 }
 
+// RuneWidthではハーフブロック文字が全角文字幅として判定され
+// ているみたいなのでそれの修正（苦肉の策）
+func fixedStringWidth(s string) int {
+	const halfBlockCharStart = 9590
+	const halfBlockCharEnd = 9625
+	w := runewidth.StringWidth(s)
+	for _, r := range []rune(s) {
+		for i := halfBlockCharStart; i <= halfBlockCharEnd; i++ {
+			if r == rune(i) {
+				w--
+				break
+			}
+		}
+	}
+	return w
+}
+
 // maxStringWidth は表示上のテキストの最も幅の長い長さを返却する。
 func maxStringWidth(s []string) (max int) {
 	for _, v := range s {
 		text := getText(v)
-		width := runewidth.StringWidth(text)
+		width := fixedStringWidth(text)
 		if max < width {
 			max = width
 		}

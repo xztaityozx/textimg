@@ -129,3 +129,19 @@ func TestMaxStringWidth(t *testing.T) {
 		assert.Equal(t, v.expect, got, v.desc)
 	}
 }
+
+func TestFixedStringWidth(t *testing.T) {
+	type TestData struct {
+		desc   string
+		s      string
+		expect int
+	}
+	tds := []TestData{
+		{desc: "エスケープ文字 有", s: "あいうえお", expect: 10},
+		{desc: "エスケープ文字 有", s: "あい▄▀", expect: 6},
+	}
+	for _, v := range tds {
+		got := fixedStringWidth(v.s)
+		assert.Equal(t, v.expect, got, v.desc)
+	}
+}

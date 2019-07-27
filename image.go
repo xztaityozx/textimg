@@ -105,16 +105,7 @@ func writeImage(w io.Writer, encFmt encodeFormat, texts []string, appconf applic
 						drawLabel(img, posX, posY-(charHeight/5), r, fgCol, face)
 					}
 
-					// RuneWidthではハーフブロック文字が全角文字幅として判定され
-					// ているみたいなのでそれの修正（苦肉の策）
-					rw := runewidth.RuneWidth(r)
-					for i := 9590; i <= 9625; i++ {
-						if r == rune(i) {
-							rw = 1
-							break
-						}
-					}
-					posX += rw * charWidth
+					posX += fixedStringWidth(string(r)) * charWidth
 				}
 			case kindEscapeSequenceColor:
 				colors := parseColorEscapeSequence(prefix)
