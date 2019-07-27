@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/golang/freetype/truetype"
-	"github.com/mattn/go-runewidth"
 	xdraw "golang.org/x/image/draw"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/gofont/gomono"
@@ -286,7 +285,7 @@ func drawEmoji(img *image.RGBA, x, y int, emojiRune rune, path string, col color
 
 func drawBackground(img *image.RGBA, posX, posY int, label string, col color.RGBA, charWidth, charHeight int) {
 	var (
-		tw     = runewidth.StringWidth(label)
+		tw     = fixedStringWidth(label)
 		width  = tw * charWidth
 		height = charHeight
 	)
