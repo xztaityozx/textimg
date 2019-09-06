@@ -2,6 +2,7 @@ language: go
 
 env:
   global:
+    - PATH=$PATH:$GOPATH/bin
     - GO111MODULE=on
     - TEXTIMG_EMOJI_DIR=$HOME/noto-emoji/png/128
     - TEXTIMG_FONT_FILE=/Library/Fonts/AppleGothic.ttf
@@ -27,6 +28,8 @@ install:
   - chmod 0777 $HOME/symbola
   - if [[ ! -e "$HOME/symbola/symbola.zip" ]]; then wget https://www.wfonts.com/download/data/2016/04/23/symbola/symbola.zip -q -O $HOME/symbola/symbola.zip; fi
   - unzip -o $HOME/symbola/symbola.zip -d /tmp
+  - GO111MODULE=off go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+  - golangci-lint help
 
 before_script:
   - if [ "$TRAVIS_OS_NAME" = linux ]; then sudo install -d -o $USER -g $USER -m 0755 /images; fi
@@ -37,6 +40,7 @@ script:
   - make build
   - make install
   - make test
+  - golangci-lint run
   - ./bin/textimg --help
   - ./bin/textimg --version
   - if [ "$TRAVIS_OS_NAME" = linux ]; then ./bin/textimg "t.png" -s; fi
