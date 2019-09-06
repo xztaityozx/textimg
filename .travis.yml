@@ -22,7 +22,6 @@ os:
   - osx
 
 install:
-  - make bootstrap
   - if [[ ! -e "$HOME/noto-emoji" ]]; then git clone https://github.com/googlefonts/noto-emoji $HOME/noto-emoji; fi
   - mkdir -p $HOME/symbola
   - chmod 0777 $HOME/symbola
@@ -38,6 +37,8 @@ script:
   - make build
   - make install
   - make test
+  - ./bin/textimg --help
+  - ./bin/textimg --version
   - if [ "$TRAVIS_OS_NAME" = linux ]; then ./bin/textimg "t.png" -s; fi
   - if [ "$TRAVIS_OS_NAME" = linux ]; then ./bin/textimg "t.gif" -sa; fi
 
@@ -46,7 +47,7 @@ after_script:
   - if [ "$TRAVIS_OS_NAME" = linux ]; then file /images/t.gif; fi
 
 before_deploy:
-  - make xbuild archive
+  - make archive
 
 deploy:
   provider: releases
