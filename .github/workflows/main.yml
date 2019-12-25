@@ -54,6 +54,14 @@ jobs:
           name: application
           path: dist.tar.gz
 
+  coverage:
+    runs-on: ubuntu-latest
+    needs: build-multi-version
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build base image
+        run: docker-compose run coverage
+
   create-tag-draft:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
